@@ -9,6 +9,8 @@ Shader "Custom/DistortionFlow"
 
         [NoScaleOffset] _FlowMap ("Flow (RG,  A noise)", 2D) = "black" {} // tex3: flow vector, with perlin noise on alpha channel
 
+        [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
+
         // jump control via slider bar, note the jump of uv offset should not greater than 0.5, 
         // because the period is 1, offset 0.5 is too coarse.
         _UJump ("U jump per phase", Range(-0.25, 0.25)) = 0.25
@@ -31,7 +33,7 @@ Shader "Custom/DistortionFlow"
         #pragma target 3.0
         #include "Flow.cginc"
 
-        sampler2D _MainTex, _FlowMap;
+        sampler2D _MainTex, _FlowMap, _NormalMap;
 
         struct Input
         {
@@ -62,6 +64,11 @@ Shader "Custom/DistortionFlow"
 
             fixed4 c = (texA + texB) * _Color;
             o.Albedo = c.rgb;
+
+
+            float3 normalA = UnpackNormal(tex2D(_NormalMap, uvwA.xy)) * uvwA.z;
+            float3 normalB = UnpackNormal(tex2D(_NormalMap, uvwB.xy)) * uvwB.z;
+            o.Normal = normalize(normalA + normalB);    // surface shader will compute the lighting automatically
             
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
