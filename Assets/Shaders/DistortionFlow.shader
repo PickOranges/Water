@@ -34,11 +34,18 @@ Shader "Custom/DistortionFlow"
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            float2 flowVector = tex2D(_FlowMap, IN.uv_MainTex).rg * 2 - 1;  // disturb. can be pos or neg, thus we make the value in range of [-1,1].
-            float noise = tex2D(_FlowMap, IN.uv_MainTex).a;                
-			// perlin noise on time, i.e. black pattern along the time(i.e. along the position displacement of uv coords.)
-            float3 uvw = FlowUVW(IN.uv_MainTex, flowVector, _Time.y + noise); 
-            fixed4 c = tex2D (_MainTex, uvw.xy) * uvw.z * _Color;
+            float2 flowVector = tex2D(_FlowMap, IN.uv_MainTex).rg * 2 - 1; 
+            float noise = tex2D(_FlowMap, IN.uv_MainTex).a;
+            float time = _Time.y + noise;
+			
+            float3 uvwA = FlowUVW(IN.uv_MainTex, flowVector, time, false);
+			float3 uvwB = FlowUVW(IN.uv_MainTex, flowVector, time, true);
+
+            fixed4 texA = tex2D(_MainTex, uvwA.xy) * uvwA.z;
+			fixed4 texB = tex2D(_MainTex, uvwB.xy) * uvwB.z;
+
+            fixed4 c = (texA + texB) * _Color;
+            //fixed4 c = texA * 2 * _Color;
             o.Albedo = c.rgb;
             
             o.Metallic = _Metallic;
