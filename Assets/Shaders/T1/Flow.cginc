@@ -54,4 +54,11 @@ float3 FlowUVW (float2 uv, float2 flowVector, float2 jump, float flowOffset, flo
 	return uvw;
 }
 
+
+// T2
+float2 DirectionalFlowUV (float2 uv, float2 flowVector, float tiling, float time) {
+	uv.y -= time;
+	return uv * tiling;
+}
+
 #endif
