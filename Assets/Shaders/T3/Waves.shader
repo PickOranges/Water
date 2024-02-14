@@ -10,6 +10,7 @@ Shader "Custom/Waves"
         _Speed ("Speed", Float) = 1
 
         _WaveA ("Wave A (dir, steepness, wavelength)", Vector) = (1,0,0.5,10)
+        _WaveB ("Wave B", Vector) = (0,1,0.25,20)
     }
     SubShader
     {
@@ -31,7 +32,7 @@ Shader "Custom/Waves"
         half _Metallic;
         fixed4 _Color;
         float _Amplitude;
-        float4 _WaveA;
+        float4 _WaveA, _WaveB;
 
         float3 GerstnerWave (float4 wave, float3 p, inout float3 tangent, inout float3 binormal) {
 		    float steepness = wave.z;
@@ -64,11 +65,12 @@ Shader "Custom/Waves"
 		}
 
         void vert(inout appdata_full vertexData) {
-            float3 gridPoint = vertexData.vertex.xyz;
-			float3 tangent = float3(1, 0, 0);
-			float3 binormal = float3(0, 0, 1);
+			float3 gridPoint = vertexData.vertex.xyz;
+			float3 tangent = float3(1, 0, 0);   // init direction must be given !
+			float3 binormal = float3(0, 0, 1);  // init direction must be given !
 			float3 p = gridPoint;
 			p += GerstnerWave(_WaveA, gridPoint, tangent, binormal);
+            p += GerstnerWave(_WaveB, gridPoint, tangent, binormal);
 			float3 normal = normalize(cross(binormal, tangent));
 			vertexData.vertex.xyz = p;
 			vertexData.normal = normal;
